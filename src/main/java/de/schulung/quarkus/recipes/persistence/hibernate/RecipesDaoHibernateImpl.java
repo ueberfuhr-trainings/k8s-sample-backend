@@ -47,4 +47,24 @@ public class RecipesDaoHibernateImpl implements RecipesDao {
     repository.persist(entity);
     mapper.copy(entity, recipe);
   }
+
+  @Override
+  @Transactional
+  public boolean update(Recipe recipe) {
+    return repository
+      .findByIdOptional(recipe.getId())
+      .map(entity -> {
+        var updated = mapper.map(recipe);
+        updated.setId(entity.getId());
+        repository.getEntityManager().merge(updated);
+        return true;
+      })
+      .orElse(false);
+  }
+
+  @Override
+  @Transactional
+  public boolean deleteById(String id) {
+    return repository.deleteById(id);
+  }
 }

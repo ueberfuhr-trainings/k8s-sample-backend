@@ -16,4 +16,8 @@ public interface RecipesDao {
   }
 
   void save(Recipe recipe);
+
+  boolean update(Recipe recipe);
+
+  boolean deleteById(String id);
 }

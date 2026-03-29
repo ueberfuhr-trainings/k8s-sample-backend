@@ -32,4 +32,18 @@ public class RecipesDaoInMemoryImpl implements RecipesDao {
     }
     recipes.put(recipe.getId(), recipe);
   }
+
+  @Override
+  public boolean update(Recipe recipe) {
+    if (recipe.getId() == null || !recipes.containsKey(recipe.getId())) {
+      return false;
+    }
+    recipes.put(recipe.getId(), recipe);
+    return true;
+  }
+
+  @Override
+  public boolean deleteById(String id) {
+    return recipes.remove(id) != null;
+  }
 }

@@ -60,4 +60,31 @@ public class RecipesResource {
       .map(mapper::map)
       .orElseThrow(NotFoundException::new);
   }
+
+  @PUT
+  @Path("/{id}")
+  public RecipeDto updateRecipe(
+    @PathParam("id")
+    String id,
+    @Valid
+    RecipeDto recipeDto
+  ) {
+    var recipe = mapper.map(recipeDto);
+    if (!service.update(id, recipe)) {
+      throw new NotFoundException();
+    }
+    return mapper.map(recipe);
+  }
+
+  @DELETE
+  @Path("/{id}")
+  public Response deleteRecipe(
+    @PathParam("id")
+    String id
+  ) {
+    if (!service.deleteById(id)) {
+      throw new NotFoundException();
+    }
+    return Response.noContent().build();
+  }
 }

@@ -48,4 +48,23 @@ public class RecipesService {
     dao.save(recipe);
 
   }
+
+  public boolean update(String id, @Valid Recipe recipe) {
+    recipe.setId(id);
+    recipe.setLastEdited(OffsetDateTime.now());
+
+    if (null == recipe.getImg()) {
+      recipe.setImg("/recipe_pictures/default.jpg");
+    }
+
+    if (null == recipe.getDifficulty()) {
+      recipe.setDifficulty(Difficulty.MEDIUM);
+    }
+
+    return dao.update(recipe);
+  }
+
+  public boolean deleteById(String id) {
+    return dao.deleteById(id);
+  }
 }

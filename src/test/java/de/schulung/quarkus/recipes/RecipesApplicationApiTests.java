@@ -624,6 +624,210 @@ class RecipesApplicationApiTests {
       .statusCode(400);
   }
 
+  // --- PUT /recipes/{id} ---
+
+  @Test
+  void shouldUpdateRecipeAndReturnUpdatedData() {
+    final var createJson = """
+      {
+        "name": "Original Recipe",
+        "servings": 2,
+        "duration": 15,
+        "difficulty": "easy",
+        "ingredients": [
+          { "unit": "pieces", "quantity": 1.0, "name": "Tomato" }
+        ],
+        "preparation": "Cook it."
+      }
+      """;
+
+    final var location = given()
+      .contentType(ContentType.JSON)
+      .body(createJson)
+      .when().post("/recipes")
+      .then()
+      .statusCode(201)
+      .extract().header("Location");
+
+    final var updateJson = """
+      {
+        "name": "Updated Recipe",
+        "servings": 4,
+        "duration": 45,
+        "difficulty": "hard",
+        "ingredients": [
+          { "unit": "grams", "quantity": 500.0, "name": "Pasta" },
+          { "unit": "pieces", "quantity": 3.0, "name": "Egg" }
+        ],
+        "preparation": "Boil pasta, mix with eggs."
+      }
+      """;
+
+    given()
+      .contentType(ContentType.JSON)
+      .body(updateJson)
+      .when().put(location)
+      .then()
+      .statusCode(200)
+      .body("name", is("Updated Recipe"))
+      .body("servings", is(4))
+      .body("duration", is(45))
+      .body("difficulty", is("hard"))
+      .body("ingredients", hasSize(2))
+      .body("preparation", is("Boil pasta, mix with eggs."))
+      .body("lastEdited", notNullValue());
+
+    given()
+      .when().get(location)
+      .then()
+      .statusCode(200)
+      .body("name", is("Updated Recipe"))
+      .body("servings", is(4));
+  }
+
+  @Test
+  void shouldApplyDefaultsWhenUpdatingWithoutOptionalFields() {
+    final var createJson = """
+      {
+        "name": "Recipe With Img",
+        "img": "/my-image.jpg",
+        "servings": 2,
+        "duration": 15,
+        "difficulty": "hard",
+        "ingredients": [
+          { "unit": "pieces", "quantity": 1.0, "name": "Tomato" }
+        ],
+        "preparation": "Cook it."
+      }
+      """;
+
+    final var location = given()
+      .contentType(ContentType.JSON)
+      .body(createJson)
+      .when().post("/recipes")
+      .then()
+      .statusCode(201)
+      .extract().header("Location");
+
+    final var updateJson = """
+      {
+        "name": "Updated Without Optionals",
+        "servings": 3,
+        "duration": 20,
+        "ingredients": [
+          { "unit": "pieces", "quantity": 1.0, "name": "Tomato" }
+        ],
+        "preparation": "Cook it differently."
+      }
+      """;
+
+    given()
+      .contentType(ContentType.JSON)
+      .body(updateJson)
+      .when().put(location)
+      .then()
+      .statusCode(200)
+      .body("img", is("/recipe_pictures/default.jpg"))
+      .body("difficulty", is("medium"));
+  }
+
+  @Test
+  void shouldReturn404WhenUpdatingNonExistentRecipe() {
+    final var updateJson = """
+      {
+        "name": "Ghost Recipe",
+        "servings": 2,
+        "duration": 10,
+        "ingredients": [
+          { "unit": "pieces", "quantity": 1.0, "name": "Tomato" }
+        ],
+        "preparation": "Cook it."
+      }
+      """;
+
+    given()
+      .contentType(ContentType.JSON)
+      .body(updateJson)
+      .when().put("/recipes/non-existent-id")
+      .then()
+      .statusCode(404);
+  }
+
+  @ParameterizedTest(name = "try to update with invalid data - {0}")
+  @MethodSource("invalidRecipeRequests")
+  void shouldReturn400WhenUpdatingRecipeWithInvalidData(String description, String json) {
+    final var createJson = """
+      {
+        "name": "Valid Recipe",
+        "servings": 4,
+        "duration": 30,
+        "difficulty": "easy",
+        "ingredients": [
+          { "unit": "pieces", "quantity": 2.0, "name": "Tomato" }
+        ],
+        "preparation": "Cook it."
+      }
+      """;
+
+    final var location = given()
+      .contentType(ContentType.JSON)
+      .body(createJson)
+      .when().post("/recipes")
+      .then()
+      .statusCode(201)
+      .extract().header("Location");
+
+    given()
+      .contentType(ContentType.JSON)
+      .body(json)
+      .when().put(location)
+      .then()
+      .statusCode(400);
+  }
+
+  // --- DELETE /recipes/{id} ---
+
+  @Test
+  void shouldDeleteRecipeAndReturn204() {
+    final var createJson = """
+      {
+        "name": "To Be Deleted",
+        "servings": 2,
+        "duration": 10,
+        "ingredients": [
+          { "unit": "pieces", "quantity": 1.0, "name": "Tomato" }
+        ],
+        "preparation": "Cook it."
+      }
+      """;
+
+    final var location = given()
+      .contentType(ContentType.JSON)
+      .body(createJson)
+      .when().post("/recipes")
+      .then()
+      .statusCode(201)
+      .extract().header("Location");
+
+    given()
+      .when().delete(location)
+      .then()
+      .statusCode(204);
+
+    given()
+      .when().get(location)
+      .then()
+      .statusCode(404);
+  }
+
+  @Test
+  void shouldReturn404WhenDeletingNonExistentRecipe() {
+    given()
+      .when().delete("/recipes/non-existent-id")
+      .then()
+      .statusCode(404);
+  }
+
   // --- GET /recipes/{id} error cases ---
 
   @Test

@@ -14,7 +14,10 @@ This image provides a backend service to manage recipes, implemented with [Quark
 The application is configured via environment variables. Quarkus maps environment variables
 to properties, e.g. `quarkus.datasource.jdbc.url` becomes `QUARKUS_DATASOURCE_JDBC_URL`.
 
-### Database (PostgreSQL)
+### Database
+
+By default, the container uses an in-memory H2 database. Data will be lost when the container is stopped.
+To persist data, configure an external database (e.g. PostgreSQL) using the following environment variables:
 
 | Environment Variable          | Description              | Example                                      |
 |-------------------------------|--------------------------|----------------------------------------------|

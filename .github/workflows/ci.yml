@@ -17,6 +17,13 @@ on:
 jobs:
   build-app:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - profile: "prod"
+            artifact-name: quarkus-app
+          - profile: "dev"
+            artifact-name: quarkus-app-dev
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 21
@@ -25,19 +32,28 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
-      - name: Build with Maven
-        run: "mvn -B package --file pom.xml"
+      - name: Build with Maven (${{ matrix.profile }} profile)
+        run: "mvn -B package -Dquarkus.profile=${{ matrix.profile }} --file pom.xml"
       - name: Upload build artifacts
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
-          name: quarkus-app
+          name: ${{ matrix.artifact-name }}
           path: target/quarkus-app/
 
   build-image:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build-app
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - profile: "prod"
+            artifact-name: quarkus-app
+            tag-suffix: ""
+          - profile: "dev"
+            artifact-name: quarkus-app-dev
+            tag-suffix: "-dev"
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 21
@@ -52,7 +68,7 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: quarkus-app
+          name: ${{ matrix.artifact-name }}
           path: target/quarkus-app/
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -70,10 +86,12 @@ jobs:
           file: src/main/docker/Dockerfile.jvm
           platforms: linux/amd64,linux/arm64
           push: true
+          build-args: QUARKUS_PROFILE=${{ matrix.profile }}
           tags: |
-            ${{ env.DOCKER_IMAGE }}:latest
-            ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.VERSION }}
+            ${{ env.DOCKER_IMAGE }}:latest${{ matrix.tag-suffix }}
+            ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.VERSION }}${{ matrix.tag-suffix }}
       - name: Update Docker Hub description
+        if: matrix.tag-suffix == ''
         uses: christian-korneck/update-container-description-action@v1
         env:
           DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}

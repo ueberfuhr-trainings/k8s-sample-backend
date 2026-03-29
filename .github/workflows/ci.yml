@@ -12,6 +12,7 @@ on:
 # Required GitHub Secrets for Docker Hub push:
 #   DOCKERHUB_USERNAME - Docker Hub username
 #   DOCKERHUB_TOKEN    - Docker Hub Personal Access Token (PAT)
+#                        (must have read/write/delete scope for pushrm to update the description)
 
 jobs:
   build:
@@ -51,3 +52,14 @@ jobs:
           tags: |
             ${{ env.DOCKER_IMAGE }}:latest
             ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.VERSION }}
+      - name: Update Docker Hub description
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: christian-korneck/update-container-description-action@v1
+        env:
+          DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
+        with:
+          destination_container_repo: ${{ env.DOCKER_IMAGE }}
+          provider: dockerhub
+          short_description: "A backend managing recipes"
+          readme_file: src/main/docker/README.md

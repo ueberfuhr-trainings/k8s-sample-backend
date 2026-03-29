@@ -38,16 +38,15 @@ docker run -i --rm \
 
 #### Running without a database
 
-If no external database is available, you can use an in-memory H2 database instead.
+If no external database is available, use the `latest-dev` tag instead. This variant
+uses a built-in in-memory H2 database and requires no database configuration.
 Note that all data will be lost when the container is stopped.
 
 ```bash
 docker run -i --rm \
   -p 8080:8080 \
   -p 9000:9000 \
-  -e DB_TYPE=h2 \
-  -e DB_URL=jdbc:h2:mem:recipes \
-  ralfueberfuhr/recipes-backend:latest
+  ralfueberfuhr/recipes-backend:latest-dev
 ```
 
 ### API Usage

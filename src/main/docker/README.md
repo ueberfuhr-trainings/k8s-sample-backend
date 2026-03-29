@@ -16,25 +16,36 @@ to properties, e.g. `quarkus.datasource.jdbc.url` becomes `QUARKUS_DATASOURCE_JD
 
 ### Database
 
-By default, the container uses an in-memory H2 database. Data will be lost when the container is stopped.
-To persist data, configure an external database (e.g. PostgreSQL) using the following environment variables:
+The container requires a PostgreSQL database. Configure the connection using the following environment variables:
 
-| Environment Variable          | Description              | Example                                      |
-|-------------------------------|--------------------------|----------------------------------------------|
-| `QUARKUS_DATASOURCE_DB_KIND`  | Database type            | `postgresql`                                 |
-| `QUARKUS_DATASOURCE_JDBC_URL` | JDBC URL to the database | `jdbc:postgresql://my-database:5432/recipes` |
-| `QUARKUS_DATASOURCE_USERNAME` | Database username        | `recipes`                                    |
-| `QUARKUS_DATASOURCE_PASSWORD` | Database password        | `recipes`                                    |
+| Environment Variable | Description                                          | Example                                      |
+|----------------------|------------------------------------------------------|----------------------------------------------|
+| `DB_URL`             | JDBC URL to the database (PostgreSQL supported only) | `jdbc:postgresql://my-database:5432/recipes` |
+| `DB_USER`            | Database username                                    | `recipes`                                    |
+| `DB_PASSWORD`        | Database password                                    | `recipes`                                    |
 
-### Example
+#### Example with PostgreSQL
 
 ```bash
 docker run -i --rm \
   -p 8080:8080 \
   -p 9000:9000 \
-  -e QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://db-host:5432/recipes \
-  -e QUARKUS_DATASOURCE_USERNAME=myuser \
-  -e QUARKUS_DATASOURCE_PASSWORD=mypassword \
+  -e DB_URL=jdbc:postgresql://db-host:5432/recipes \
+  -e DB_USER=myuser \
+  -e DB_PASSWORD=mypassword \
+  ralfueberfuhr/recipes-backend:latest
+```
+
+#### Running without a database
+
+If no external database is available, you can switch to the `dev` profile, which uses an in-memory H2 database.
+Note that all data will be lost when the container is stopped.
+
+```bash
+docker run -i --rm \
+  -p 8080:8080 \
+  -p 9000:9000 \
+  -e QUARKUS_PROFILE=dev \
   ralfueberfuhr/recipes-backend:latest
 ```
 

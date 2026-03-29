@@ -11,8 +11,18 @@ This image provides a backend service to manage recipes, implemented with [Quark
 
 ## Configuration
 
-The application is configured via environment variables. Quarkus maps environment variables
-to properties, e.g. `quarkus.datasource.jdbc.url` becomes `QUARKUS_DATASOURCE_JDBC_URL`.
+The application is configured via environment variables.
+
+### CORS
+
+By default, CORS is enabled, but open for all origins.
+
+| Environment Variable   | Description                               | Default                             |
+|------------------------|-------------------------------------------|-------------------------------------|
+| `CORS_ORIGINS`         | Allowed origins for cross-origin requests | `*`                                 |
+| `CORS_METHODS`         | Allowed HTTP methods                      | `GET,POST,PUT,DELETE,OPTIONS`       |
+| `CORS_HEADERS`         | Allowed request headers                   | `accept,authorization,content-type` |
+| `CORS_EXPOSED_HEADERS` | Exposed response headers                  | `location`                          |
 
 ### Database
 
@@ -24,7 +34,7 @@ The container requires a PostgreSQL database. Configure the connection using the
 | `DB_USER`            | Database username                                    | `recipes`                                    |
 | `DB_PASSWORD`        | Database password                                    | `recipes`                                    |
 
-#### Example with PostgreSQL
+To run the container locally with a PostgreSQL, use:
 
 ```bash
 docker run -i --rm \
@@ -36,7 +46,7 @@ docker run -i --rm \
   ralfueberfuhr/recipes-backend:latest
 ```
 
-#### Running without a database
+### Running without a database
 
 If no external database is available, use the `latest-dev` tag instead. This variant
 uses a built-in in-memory H2 database and requires no database configuration.

@@ -38,14 +38,15 @@ docker run -i --rm \
 
 #### Running without a database
 
-If no external database is available, you can switch to the `dev` profile, which uses an in-memory H2 database.
+If no external database is available, you can use an in-memory H2 database instead.
 Note that all data will be lost when the container is stopped.
 
 ```bash
 docker run -i --rm \
   -p 8080:8080 \
   -p 9000:9000 \
-  -e QUARKUS_PROFILE=dev \
+  -e DB_TYPE=h2 \
+  -e DB_URL=jdbc:h2:mem:recipes \
   ralfueberfuhr/recipes-backend:latest
 ```
 
